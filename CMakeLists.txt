@@ -61,7 +61,7 @@ if(NOT LIBDEFLATE_BUILD_STATIC_LIB)
 endif()
 
 # Set common C compiler flags for all targets (the library and the programs).
-set(CMAKE_C_FLAGS_RELEASE "-O2 -DNDEBUG")
+set(CMAKE_C_FLAGS_RELEASE "-fPIC -O2 -DNDEBUG")
 set(CMAKE_C_STANDARD 99)
 if(NOT MSVC)
     check_c_compiler_flag(-Wdeclaration-after-statement HAVE_WDECLARATION_AFTER_STATEMENT)
