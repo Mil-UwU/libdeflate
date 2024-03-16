@@ -35,7 +35,7 @@
 #if defined(ARCH_ARM32) || defined(ARCH_ARM64)
 
 #if !defined(FREESTANDING) && \
-    (COMPILER_SUPPORTS_TARGET_FUNCTION_ATTRIBUTE || defined(_MSC_VER)) && \
+    (defined(__GNUC__) || defined(__clang__) || defined(_MSC_VER)) && \
     (defined(__linux__) || \
      (defined(__APPLE__) && defined(ARCH_ARM64)) || \
      (defined(_WIN32) && defined(ARCH_ARM64)))
@@ -43,11 +43,11 @@
 #  define HAVE_DYNAMIC_ARM_CPU_FEATURES	1
 #endif
 
-#define ARM_CPU_FEATURE_NEON		0x00000001
-#define ARM_CPU_FEATURE_PMULL		0x00000002
-#define ARM_CPU_FEATURE_CRC32		0x00000004
-#define ARM_CPU_FEATURE_SHA3		0x00000008
-#define ARM_CPU_FEATURE_DOTPROD		0x00000010
+#define ARM_CPU_FEATURE_NEON		(1 << 0)
+#define ARM_CPU_FEATURE_PMULL		(1 << 1)
+#define ARM_CPU_FEATURE_CRC32		(1 << 2)
+#define ARM_CPU_FEATURE_SHA3		(1 << 3)
+#define ARM_CPU_FEATURE_DOTPROD		(1 << 4)
 
 #define HAVE_NEON(features)	(HAVE_NEON_NATIVE    || ((features) & ARM_CPU_FEATURE_NEON))
 #define HAVE_PMULL(features)	(HAVE_PMULL_NATIVE   || ((features) & ARM_CPU_FEATURE_PMULL))
@@ -56,7 +56,7 @@
 #define HAVE_DOTPROD(features)	(HAVE_DOTPROD_NATIVE || ((features) & ARM_CPU_FEATURE_DOTPROD))
 
 #if HAVE_DYNAMIC_ARM_CPU_FEATURES
-#define ARM_CPU_FEATURES_KNOWN		0x80000000
+#define ARM_CPU_FEATURES_KNOWN		(1U << 31)
 extern volatile u32 libdeflate_arm_cpu_features;
 
 void libdeflate_init_arm_cpu_features(void);
@@ -98,8 +98,7 @@ static inline u32 get_arm_cpu_features(void) { return 0; }
 #if HAVE_PMULL_NATIVE || \
 	(HAVE_DYNAMIC_ARM_CPU_FEATURES && \
 	 HAVE_NEON_INTRIN /* needed to exclude soft float arm32 case */ && \
-	 (GCC_PREREQ(6, 1) || CLANG_PREREQ(3, 5, 6010000) || \
-	  defined(_MSC_VER)) && \
+	 (GCC_PREREQ(6, 1) || defined(__clang__) || defined(_MSC_VER)) && \
 	  /*
 	   * On arm32 with clang, the crypto intrinsics (which include pmull)
 	   * are not defined, even when using -mfpu=crypto-neon-fp-armv8,
@@ -179,9 +178,7 @@ static inline u32 get_arm_cpu_features(void) { return 0; }
 	!defined(__ARM_ARCH_7EM__)
 #      define HAVE_CRC32_INTRIN	1
 #    endif
-#  elif CLANG_PREREQ(3, 4, 6000000)
-#    define HAVE_CRC32_INTRIN	1
-#  elif defined(_MSC_VER)
+#  elif defined(__clang__) || defined(_MSC_VER)
 #    define HAVE_CRC32_INTRIN	1
 #  endif
 #endif

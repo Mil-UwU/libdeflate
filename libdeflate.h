@@ -13,8 +13,8 @@ extern "C" {
 #endif
 
 #define LIBDEFLATE_VERSION_MAJOR	1
-#define LIBDEFLATE_VERSION_MINOR	18
-#define LIBDEFLATE_VERSION_STRING	"1.18"
+#define LIBDEFLATE_VERSION_MINOR	19
+#define LIBDEFLATE_VERSION_STRING	"1.19"
 
 /*
  * Users of libdeflate.dll on Windows can define LIBDEFLATE_DLL to cause
@@ -70,7 +70,7 @@ libdeflate_alloc_compressor_ex(int compression_level,
  * data.  It attempts to compress 'in_nbytes' bytes of data located at 'in' and
  * write the result to 'out', which has space for 'out_nbytes_avail' bytes.  The
  * return value is the compressed size in bytes, or 0 if the data could not be
- * compressed to 'out_nbytes_avail' bytes or fewer (but see note below).
+ * compressed to 'out_nbytes_avail' bytes or fewer.
  *
  * If compression is successful, then the output data is guaranteed to be a
  * valid DEFLATE stream that decompresses to the input data.  No other
@@ -80,22 +80,6 @@ libdeflate_alloc_compressor_ex(int compression_level,
  * writing tests that compare compressed data to a golden output, as this can
  * break when libdeflate is updated.  (This property isn't specific to
  * libdeflate; the same is true for zlib and other compression libraries too.)
- *
- * Note: due to a performance optimization, libdeflate_deflate_compress()
- * currently needs a small amount of slack space at the end of the output
- * buffer.  As a result, it can't actually report compressed sizes very close to
- * 'out_nbytes_avail'.  This doesn't matter in real-world use cases, and
- * libdeflate_deflate_compress_bound() already includes the slack space.
- * However, it does mean that testing code that redundantly compresses data
- * using an exact-sized output buffer won't work as might be expected:
- *
- *	out_nbytes = libdeflate_deflate_compress(c, in, in_nbytes, out,
- *						 libdeflate_deflate_compress_bound(in_nbytes));
- *	// The following assertion will fail.
- *	assert(libdeflate_deflate_compress(c, in, in_nbytes, out, out_nbytes) != 0);
- *
- * To avoid this, either don't write tests like the above, or make sure to
- * include at least 9 bytes of slack space in 'out_nbytes_avail'.
  */
 LIBDEFLATEAPI size_t
 libdeflate_deflate_compress(struct libdeflate_compressor *compressor,
